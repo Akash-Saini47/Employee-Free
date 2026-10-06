@@ -1,0 +1,22 @@
+# Android & Gradle
+.gradle/
+build/
+app/build/
+*.iml
+.idea/
+local.properties
+.DS_Store
+*.apk
+*.aab
+
+# Python & Environment
+__pycache__/
+*.pyc
+*.pyo
+venv/
+.env
+
+# Node & Temp
+node_modules/
+dist/
+*.log

@@ -1,0 +1,1105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SalaryWise - Personal Salary & Financial Management</title>
+    <link rel="stylesheet" href="styles.css">
+    <!-- Google Fonts: Inter / Roboto -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="theme-light">
+
+    <!-- View Mode Switcher Header for Desktop Preview -->
+    <header class="preview-control-bar">
+        <div class="control-brand">
+            <span class="app-icon-badge">₹</span>
+            <div>
+                <strong>SalaryWise</strong>
+                <span class="preview-tag">Android Mobile App Simulator</span>
+            </div>
+        </div>
+        <div class="control-actions">
+            <button id="toggleThemeBtn" class="pill-btn" title="Toggle Theme">
+                <i data-lucide="moon"></i> <span id="themeBtnText">Dark Mode</span>
+            </button>
+            <button id="seedDataBtn" class="pill-btn primary" title="Load Specification Sample Data">
+                <i data-lucide="sparkles"></i> <span>Reset Sample Data</span>
+            </button>
+            <button id="toggleFrameBtn" class="pill-btn" title="Toggle Phone Frame">
+                <i data-lucide="smartphone"></i> <span id="frameBtnText">Frame: ON</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Container: Android Phone Shell -->
+    <div class="device-wrapper framed" id="deviceWrapper">
+        <div class="android-phone">
+            <!-- Camera Punch Hole & Speaker -->
+            <div class="phone-notch">
+                <div class="camera-lens"></div>
+            </div>
+
+            <!-- Android Status Bar -->
+            <div class="android-status-bar">
+                <span class="status-time" id="statusClock">12:30</span>
+                <div class="status-icons">
+                    <i data-lucide="wifi" class="status-icon"></i>
+                    <i data-lucide="signal" class="status-icon"></i>
+                    <i data-lucide="battery-charging" class="status-icon"></i>
+                </div>
+            </div>
+
+            <!-- Top App Bar -->
+            <div class="app-top-bar" id="appTopBar">
+                <div class="brand-info">
+                    <span class="app-title">SalaryWise</span>
+                    <span class="user-greeting" id="topUserGreeting">Hello, Rahul</span>
+                </div>
+                <div class="top-actions">
+                    <button class="icon-btn" id="notifBtn" title="Notifications">
+                        <i data-lucide="bell"></i>
+                        <span class="notif-badge" id="notifBadge">3</span>
+                    </button>
+                    <button class="icon-btn avatar-btn" id="profileBtn" title="Profile & Settings">
+                        <i data-lucide="user"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Scrollable Screen Content Container -->
+            <main class="app-content-viewport" id="appViewport">
+                <!-- Screens are dynamically swapped via JavaScript router -->
+                
+                <!-- 1. ONBOARDING SCREEN -->
+                <section class="screen" id="screenOnboarding">
+                    <div class="onboarding-container">
+                        <div class="brand-hero-logo">
+                            <div class="brand-hero-icon">₹</div>
+                            <h2>Welcome to SalaryWise</h2>
+                            <p>Personal salary &amp; financial management app for employees</p>
+                            <div class="loop-badge">TRACK → PLAN → SPEND → ANALYZE → SAVE → ACHIEVE</div>
+                        </div>
+
+                        <form id="onboardingForm" class="onboarding-form">
+                            <div class="form-section-card">
+                                <h3>1. Personal Details</h3>
+                                <div class="input-field">
+                                    <label>Your Name</label>
+                                    <input type="text" id="obName" placeholder="e.g. Rahul Sharma" value="Rahul Sharma">
+                                </div>
+                            </div>
+
+                            <div class="form-section-card">
+                                <h3>2. Salary Information</h3>
+                                <div class="input-field">
+                                    <label>Monthly In-Hand Salary (₹) <span class="required">*</span></label>
+                                    <div class="input-with-symbol">
+                                        <span class="curr-prefix">₹</span>
+                                        <input type="number" id="obSalary" value="40000" required>
+                                    </div>
+                                    <span class="field-hint">Net take-home amount credited to bank</span>
+                                </div>
+                                <div class="input-field">
+                                    <label>Salary Credit Day of Month (1 - 31)</label>
+                                    <input type="number" id="obSalaryDate" value="1" min="1" max="31">
+                                </div>
+                            </div>
+
+                            <div class="form-section-card">
+                                <h3>3. Financial Baseline (Optional)</h3>
+                                <div class="input-field">
+                                    <label>Current Liquid Savings (₹)</label>
+                                    <div class="input-with-symbol">
+                                        <span class="curr-prefix">₹</span>
+                                        <input type="number" id="obSavings" value="15000">
+                                    </div>
+                                </div>
+                                <div class="input-field">
+                                    <label>Monthly Essential Expenses (₹)</label>
+                                    <div class="input-with-symbol">
+                                        <span class="curr-prefix">₹</span>
+                                        <input type="number" id="obEssentials" value="20000">
+                                    </div>
+                                </div>
+                                <div class="input-field">
+                                    <label>Monthly Savings Target (₹)</label>
+                                    <div class="input-with-symbol">
+                                        <span class="curr-prefix">₹</span>
+                                        <input type="number" id="obSavingsTarget" value="15000">
+                                    </div>
+                                </div>
+                                <div class="input-field">
+                                    <label>Emergency Fund Target (₹)</label>
+                                    <div class="input-with-symbol">
+                                        <span class="curr-prefix">₹</span>
+                                        <input type="number" id="obEFTarget" value="120000">
+                                    </div>
+                                    <span class="field-hint">Recommended: 6 months of essential expenses</span>
+                                </div>
+                            </div>
+
+                            <button type="submit" class="primary-btn btn-large w-100">
+                                <span>Generate My Financial Plan</span>
+                                <i data-lucide="arrow-right"></i>
+                            </button>
+                        </form>
+                    </div>
+                </section>
+
+                <!-- 2. HOME SCREEN -->
+                <section class="screen active" id="screenHome">
+                    <!-- Hero Card: Section 2 Requirements -->
+                    <div class="hero-salary-card">
+                        <div class="hero-top-row">
+                            <div>
+                                <span class="hero-label">Monthly Salary</span>
+                                <h1 class="hero-salary-amount" id="homeSalary">₹40,000</h1>
+                            </div>
+                            <div class="hero-badge">
+                                <span>Savings Rate</span>
+                                <strong id="homeSavingsRate">38.75%</strong>
+                            </div>
+                        </div>
+
+                        <div class="hero-divider"></div>
+
+                        <div class="hero-metrics-grid">
+                            <div class="metric-item">
+                                <span class="metric-label">Total Expenses</span>
+                                <strong class="metric-val text-rose" id="homeExpenses">₹24,500</strong>
+                            </div>
+                            <div class="metric-item">
+                                <span class="metric-label">Total Saved</span>
+                                <strong class="metric-val text-emerald" id="homeSaved">₹15,500</strong>
+                            </div>
+                            <div class="metric-item">
+                                <span class="metric-label">Remaining Money</span>
+                                <strong class="metric-val" id="homeRemaining">₹15,500</strong>
+                            </div>
+                        </div>
+
+                        <div class="budget-used-row">
+                            <div class="budget-used-info">
+                                <span>Budget Used</span>
+                                <strong id="homeBudgetUsedText">61%</strong>
+                            </div>
+                            <div class="progress-bar-container">
+                                <div class="progress-bar-fill" id="homeBudgetBar" style="width: 61%;"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Deficit / Warning Alert Banner (Section 18) -->
+                    <div id="homeWarningContainer" class="warning-container">
+                        <!-- Populated dynamically -->
+                    </div>
+
+                    <!-- Smart Insight of the Day (Section 10) -->
+                    <div class="insight-card" id="homeInsightCard">
+                        <div class="insight-icon-box">
+                            <i data-lucide="lightbulb"></i>
+                        </div>
+                        <div class="insight-content">
+                            <span class="insight-tag">Smart Insight</span>
+                            <p class="insight-text" id="homeInsightText">
+                                "Your savings rate increased by 5% compared with last month."
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Quick Navigation Shortcuts -->
+                    <div class="quick-actions-row">
+                        <button class="quick-chip" onclick="navigateTo('salary')">
+                            <i data-lucide="wallet"></i>
+                            <span>Salary</span>
+                        </button>
+                        <button class="quick-chip" onclick="navigateTo('recurring')">
+                            <i data-lucide="calendar-clock"></i>
+                            <span>Bills</span>
+                        </button>
+                        <button class="quick-chip" onclick="navigateTo('stability')">
+                            <i data-lucide="shield-check"></i>
+                            <span>Stability</span>
+                        </button>
+                        <button class="quick-chip" onclick="navigateTo('report')">
+                            <i data-lucide="file-bar-chart"></i>
+                            <span>Report</span>
+                        </button>
+                    </div>
+
+                    <!-- Emergency Fund Progress Section -->
+                    <div class="section-card" onclick="navigateTo('goals')">
+                        <div class="section-card-header">
+                            <div>
+                                <h3>Emergency Fund Progress</h3>
+                                <span class="sub-text" id="homeEFSubtitle">₹60,000 / ₹1,20,000</span>
+                            </div>
+                            <span class="percent-chip" id="homeEFPct">50%</span>
+                        </div>
+                        <div class="progress-bar-container">
+                            <div class="progress-bar-fill emerald" id="homeEFBar" style="width: 50%;"></div>
+                        </div>
+                        <div class="card-footer-tip" id="homeEFCoverageTip">
+                            <i data-lucide="info"></i>
+                            <span>Covers approximately 3.0 months of essential expenses</span>
+                        </div>
+                    </div>
+
+                    <!-- Upcoming Bills Section (Section 6) -->
+                    <div class="section-card">
+                        <div class="section-card-header">
+                            <h3>Upcoming Recurring Bills</h3>
+                            <button class="link-btn" onclick="navigateTo('recurring')">View All</button>
+                        </div>
+                        <div class="upcoming-bills-list" id="homeUpcomingBillsList">
+                            <!-- Populated dynamically -->
+                        </div>
+                    </div>
+
+                    <!-- Financial Health Score Widget (Section 12) -->
+                    <div class="section-card health-score-card" onclick="navigateTo('health')">
+                        <div class="score-left">
+                            <span class="score-badge-label">Discipline Indicator</span>
+                            <h3>Financial Health Score</h3>
+                            <p>Tap to review positive factors &amp; savings consistency</p>
+                        </div>
+                        <div class="score-gauge" id="homeHealthScoreGauge">
+                            <span class="gauge-num" id="homeHealthScoreNum">78</span>
+                            <span class="gauge-denom">/ 100</span>
+                        </div>
+                    </div>
+
+                    <div style="height: 70px;"></div>
+                </section>
+
+                <!-- 3. SALARY MANAGEMENT SCREEN -->
+                <section class="screen" id="screenSalary">
+                    <div class="screen-header">
+                        <h2>Salary Management</h2>
+                        <button class="pill-btn primary" id="openAddSalaryModalBtn">
+                            <i data-lucide="plus"></i> Add Salary
+                        </button>
+                    </div>
+
+                    <div class="summary-stat-card">
+                        <span class="label">Current In-Hand Salary</span>
+                        <h2 class="val" id="salaryCurrentInHand">₹40,000</h2>
+                        <div class="stat-growth-tag">
+                            <i data-lucide="trending-up"></i>
+                            <span id="salaryGrowthTag">+14.2% Growth in last 4 months</span>
+                        </div>
+                    </div>
+
+                    <!-- Salary Growth Chart -->
+                    <div class="chart-container-card">
+                        <h3>Salary Growth Over Time</h3>
+                        <canvas id="salaryGrowthChart" height="180"></canvas>
+                    </div>
+
+                    <!-- Monthly Comparison Table / List -->
+                    <div class="section-card">
+                        <h3>Monthly Salary Records</h3>
+                        <div class="salary-records-list" id="salaryRecordsList">
+                            <!-- Populated dynamically -->
+                        </div>
+                    </div>
+                    <div style="height: 70px;"></div>
+                </section>
+
+                <!-- 4. BUDGET SCREEN -->
+                <section class="screen" id="screenBudget">
+                    <div class="screen-header">
+                        <h2>Monthly Budget</h2>
+                        <button class="pill-btn primary" id="openAddCategoryModalBtn">
+                            <i data-lucide="plus"></i> Custom Category
+                        </button>
+                    </div>
+
+                    <div class="budget-summary-banner">
+                        <div class="budget-stat-item">
+                            <span>Allocated Budget</span>
+                            <strong id="budgetTotalAllocated">₹35,000</strong>
+                        </div>
+                        <div class="budget-stat-item">
+                            <span>Total Spent</span>
+                            <strong class="text-rose" id="budgetTotalSpent">₹24,500</strong>
+                        </div>
+                        <div class="budget-stat-item">
+                            <span>Remaining</span>
+                            <strong class="text-emerald" id="budgetTotalRemaining">₹10,500</strong>
+                        </div>
+                    </div>
+
+                    <div id="budgetAlertsContainer"></div>
+
+                    <div class="budget-categories-list" id="budgetCategoriesList">
+                        <!-- Populated dynamically with Rent, Food, Groceries, etc. -->
+                    </div>
+                    <div style="height: 70px;"></div>
+                </section>
+
+                <!-- 5. EXPENSES SCREEN -->
+                <section class="screen" id="screenExpenses">
+                    <div class="screen-header">
+                        <h2>Expenses</h2>
+                        <button class="pill-btn primary" id="headerAddExpenseBtn">
+                            <i data-lucide="plus"></i> Add Expense
+                        </button>
+                    </div>
+
+                    <!-- Search Input -->
+                    <div class="search-box">
+                        <i data-lucide="search"></i>
+                        <input type="text" id="expenseSearchInput" placeholder="Search description, note, category...">
+                    </div>
+
+                    <!-- Filters Row -->
+                    <div class="filter-chips-row">
+                        <button class="filter-chip active" data-filter="all">All Dates</button>
+                        <button class="filter-chip" data-filter="today">Today</button>
+                        <button class="filter-chip" data-filter="week">This Week</button>
+                        <button class="filter-chip" data-filter="month">This Month</button>
+                    </div>
+
+                    <div class="filters-dropdown-row">
+                        <select id="expenseCategoryFilter">
+                            <option value="">All Categories</option>
+                        </select>
+                        <select id="expenseMethodFilter">
+                            <option value="">All Payment Methods</option>
+                            <option value="Cash">Cash</option>
+                            <option value="UPI">UPI</option>
+                            <option value="Debit Card">Debit Card</option>
+                            <option value="Credit Card">Credit Card</option>
+                            <option value="Bank Transfer">Bank Transfer</option>
+                            <option value="Other">Other</option>
+                        </select>
+                        <button class="icon-btn sort-btn" id="sortExpenseBtn" title="Sort by Amount">
+                            <i data-lucide="arrow-up-down"></i>
+                        </button>
+                    </div>
+
+                    <div class="expense-meta-bar">
+                        <span id="expenseCountText">0 expenses</span>
+                        <strong class="text-rose" id="expenseTotalFiltered">₹0</strong>
+                    </div>
+
+                    <div class="expense-cards-list" id="expenseCardsList">
+                        <!-- Populated dynamically -->
+                    </div>
+                    <div style="height: 70px;"></div>
+                </section>
+
+                <!-- 6. RECURRING EXPENSES SCREEN -->
+                <section class="screen" id="screenRecurring">
+                    <div class="screen-header">
+                        <h2>Recurring Bills</h2>
+                        <button class="pill-btn primary" id="openAddRecurringBtn">
+                            <i data-lucide="plus"></i> Add Bill
+                        </button>
+                    </div>
+
+                    <div class="summary-stat-card">
+                        <span class="label">Monthly Fixed Commitments</span>
+                        <h2 class="val" id="recurringTotalSum">₹16,500</h2>
+                        <span class="sub-text">Includes rent, subscriptions, EMIs, and utilities</span>
+                    </div>
+
+                    <div class="recurring-items-list" id="recurringItemsList">
+                        <!-- Populated dynamically -->
+                    </div>
+                    <div style="height: 70px;"></div>
+                </section>
+
+                <!-- 7. SAVINGS GOALS SCREEN -->
+                <section class="screen" id="screenGoals">
+                    <div class="screen-header">
+                        <h2>Savings &amp; Goals</h2>
+                        <button class="pill-btn primary" id="openAddGoalBtn">
+                            <i data-lucide="plus"></i> New Goal
+                        </button>
+                    </div>
+
+                    <div class="savings-metrics-hero">
+                        <div class="sm-item">
+                            <span>Current Savings</span>
+                            <h3 id="savingsTotalHero">₹90,000</h3>
+                        </div>
+                        <div class="sm-item">
+                            <span>Monthly Target</span>
+                            <h3 id="savingsTargetHero">₹15,000</h3>
+                        </div>
+                    </div>
+
+                    <div class="goals-container" id="savingsGoalsList">
+                        <!-- Populated dynamically with Emergency Fund, Laptop, Vacation, etc. -->
+                    </div>
+                    <div style="height: 70px;"></div>
+                </section>
+
+                <!-- 8. FINANCIAL FREEDOM / STABILITY SCREEN -->
+                <section class="screen" id="screenStability">
+                    <div class="screen-header">
+                        <h2>Financial Stability Indicators</h2>
+                    </div>
+
+                    <div class="stability-hero-card">
+                        <div class="stability-badge" id="stabilityStageBadge">Financial Security</div>
+                        <h1 class="stability-months" id="stabilityMonthsCount">4.0 Months</h1>
+                        <p class="stability-explanation" id="stabilityExplanation">
+                            "Your emergency fund currently covers approximately 4 months of essential expenses."
+                        </p>
+
+                        <div class="progress-bar-container large">
+                            <div class="progress-bar-fill emerald" id="stabilityCoverageBar" style="width: 66%;"></div>
+                        </div>
+                        <div class="milestones-row">
+                            <span>1 Mo: Buffer</span>
+                            <span>3 Mo: Security</span>
+                            <span>6 Mo: Stability</span>
+                            <span>12 Mo: High Resilience</span>
+                        </div>
+                    </div>
+
+                    <div class="indicators-grid">
+                        <div class="indicator-tile">
+                            <span class="label">Emergency Fund</span>
+                            <strong id="indEmergencyFund">₹1,20,000</strong>
+                        </div>
+                        <div class="indicator-tile">
+                            <span class="label">Essential Expenses</span>
+                            <strong id="indEssentialExpenses">₹30,000</strong>
+                        </div>
+                        <div class="indicator-tile">
+                            <span class="label">Savings Rate</span>
+                            <strong class="text-emerald" id="indSavingsRate">37.5%</strong>
+                        </div>
+                        <div class="indicator-tile">
+                            <span class="label">Debt-to-Income (DTI)</span>
+                            <strong id="indDebtToIncome">15%</strong>
+                        </div>
+                    </div>
+
+                    <div class="advice-card">
+                        <div class="advice-header">
+                            <i data-lucide="compass"></i>
+                            <strong>Personal Action Plan</strong>
+                        </div>
+                        <p id="stabilityActionPlan">
+                            Prioritize sustaining your emergency fund until you reach 6 months of essential living costs (₹1,80,000). Avoid increasing discretionary debt.
+                        </p>
+                    </div>
+
+                    <div class="disclaimer-note">
+                        <i data-lucide="alert-circle"></i>
+                        <span>SalaryWise does not promise or guarantee financial freedom or investment returns. All projections serve as personal discipline indicators.</span>
+                    </div>
+                    <div style="height: 70px;"></div>
+                </section>
+
+                <!-- 9. ANALYTICS SCREEN -->
+                <section class="screen" id="screenAnalytics">
+                    <div class="screen-header">
+                        <h2>Analytics &amp; Trends</h2>
+                    </div>
+
+                    <div class="filter-chips-row">
+                        <button class="analytics-filter-chip active" data-range="this_month">This Month</button>
+                        <button class="analytics-filter-chip" data-range="last_month">Last Month</button>
+                        <button class="analytics-filter-chip" data-range="last_3_months">Last 3 Mo</button>
+                        <button class="analytics-filter-chip" data-range="last_6_months">Last 6 Mo</button>
+                        <button class="analytics-filter-chip" data-range="this_year">This Year</button>
+                    </div>
+
+                    <!-- Statistics Summary -->
+                    <div class="analytics-stats-grid">
+                        <div class="astat-card">
+                            <span>Avg Monthly Expense</span>
+                            <strong id="anAvgExpense">₹24,500</strong>
+                        </div>
+                        <div class="astat-card">
+                            <span>Avg Monthly Savings</span>
+                            <strong class="text-emerald" id="anAvgSavings">₹15,500</strong>
+                        </div>
+                        <div class="astat-card">
+                            <span>Highest Expense</span>
+                            <strong class="text-rose" id="anHighestExpense">₹12,000</strong>
+                        </div>
+                        <div class="astat-card">
+                            <span>Top Category</span>
+                            <strong id="anTopCategory">Rent</strong>
+                        </div>
+                    </div>
+
+                    <!-- Chart 1: Income vs Expenses -->
+                    <div class="chart-container-card">
+                        <h3>1. Income vs Expenses</h3>
+                        <canvas id="incomeVsExpensesChart" height="200"></canvas>
+                    </div>
+
+                    <!-- Chart 2: Category Breakdown -->
+                    <div class="chart-container-card">
+                        <h3>2. Category-Wise Expenses</h3>
+                        <canvas id="categoryDonutChart" height="220"></canvas>
+                        <div class="category-legend" id="categoryChartLegend"></div>
+                    </div>
+
+                    <!-- Chart 3: Budget vs Actual Spending -->
+                    <div class="chart-container-card">
+                        <h3>3. Budget vs Actual Spending</h3>
+                        <canvas id="budgetVsActualChart" height="210"></canvas>
+                    </div>
+
+                    <!-- Chart 4: Monthly Spending Trend -->
+                    <div class="chart-container-card">
+                        <h3>4. Spending &amp; Savings Trend</h3>
+                        <canvas id="spendingTrendChart" height="190"></canvas>
+                    </div>
+
+                    <div style="height: 70px;"></div>
+                </section>
+
+                <!-- 10. MONTHLY FINANCIAL REPORT SCREEN -->
+                <section class="screen" id="screenReport">
+                    <div class="screen-header">
+                        <h2>Monthly Financial Summary</h2>
+                        <button class="pill-btn" id="exportReportBtn">
+                            <i data-lucide="share-2"></i> Export
+                        </button>
+                    </div>
+
+                    <div class="report-document" id="reportContentArea">
+                        <div class="report-header-banner">
+                            <div class="brand-line">
+                                <span class="report-logo">₹ SalaryWise</span>
+                                <span class="report-month" id="repMonthName">OCTOBER 2026</span>
+                            </div>
+                            <h3>MONTHLY FINANCIAL SUMMARY</h3>
+                        </div>
+
+                        <div class="report-numbers-table">
+                            <div class="rep-row">
+                                <span>Income</span>
+                                <strong id="repIncome">₹40,000</strong>
+                            </div>
+                            <div class="rep-row">
+                                <span>Total Expenses</span>
+                                <strong class="text-rose" id="repExpenses">₹24,500</strong>
+                            </div>
+                            <div class="rep-row highlight">
+                                <span>Total Savings</span>
+                                <strong class="text-emerald" id="repSavings">₹15,500</strong>
+                            </div>
+                            <div class="rep-row">
+                                <span>Savings Rate</span>
+                                <strong id="repSavingsRate">38.75%</strong>
+                            </div>
+                            <div class="rep-row">
+                                <span>Budget Utilization</span>
+                                <strong id="repBudgetUsed">61.2%</strong>
+                            </div>
+                        </div>
+
+                        <div class="report-section-box">
+                            <h4>Highlights</h4>
+                            <div class="rep-highlight-item">
+                                <span>Top Spending Category:</span>
+                                <strong id="repTopCategory">Rent (₹12,000)</strong>
+                            </div>
+                            <div class="rep-highlight-item">
+                                <span>Largest Single Expense:</span>
+                                <strong id="repLargestExpense">₹12,000 (House Rent)</strong>
+                            </div>
+                        </div>
+
+                        <div class="report-section-box">
+                            <h4>Compared with Previous Month</h4>
+                            <div class="comparison-pills-row">
+                                <div class="comp-badge success" id="repExpComparison">Expenses ↓ 8%</div>
+                                <div class="comp-badge success" id="repSavComparison">Savings ↑ 12%</div>
+                            </div>
+                        </div>
+
+                        <div class="report-section-box">
+                            <h4>Goals &amp; Safety Progress</h4>
+                            <p id="repGoalProgressSummary">Emergency fund covers 4.0 months of living expenses. Vacation goal reached 40% completion.</p>
+                        </div>
+                    </div>
+                    <div style="height: 70px;"></div>
+                </section>
+
+                <!-- 11. FINANCIAL HEALTH SCORE DETAIL SCREEN -->
+                <section class="screen" id="screenHealth">
+                    <div class="screen-header">
+                        <h2>Financial Health Score</h2>
+                    </div>
+
+                    <div class="health-score-hero">
+                        <div class="large-score-circle">
+                            <h1 id="healthScoreBig">78</h1>
+                            <span>/ 100</span>
+                        </div>
+                        <h3 id="healthRatingTitle">Good Financial Momentum</h3>
+                        <p>Based on savings rate, budget discipline, emergency coverage, and expense consistency.</p>
+                    </div>
+
+                    <div class="score-breakdown-card">
+                        <h3>Score Factors Breakdown</h3>
+                        <div class="factors-list" id="healthFactorsList">
+                            <!-- Populated dynamically -->
+                        </div>
+                    </div>
+
+                    <div class="disclaimer-note">
+                        <i data-lucide="info"></i>
+                        <span>This score is an automated algorithmic indicator to help you monitor personal money discipline. It is not licensed financial or investment advice.</span>
+                    </div>
+                    <div style="height: 70px;"></div>
+                </section>
+
+                <!-- 12. NOTIFICATIONS CENTER SCREEN -->
+                <section class="screen" id="screenNotifications">
+                    <div class="screen-header">
+                        <h2>Notifications</h2>
+                        <button class="link-btn" id="clearNotifsBtn">Clear All</button>
+                    </div>
+
+                    <div class="notifications-list" id="notificationsList">
+                        <!-- Populated dynamically -->
+                    </div>
+                    <div style="height: 70px;"></div>
+                </section>
+
+                <!-- 13. PROFILE & SETTINGS SCREEN -->
+                <section class="screen" id="screenProfile">
+                    <div class="screen-header">
+                        <h2>Profile &amp; Settings</h2>
+                    </div>
+
+                    <div class="profile-card">
+                        <div class="profile-avatar">
+                            <i data-lucide="user"></i>
+                        </div>
+                        <div class="profile-details">
+                            <h3 id="profileName">Rahul Sharma</h3>
+                            <span id="profileSalaryLabel">Monthly Salary: ₹40,000</span>
+                            <span id="profileSalaryDate">Salary Day: 1st of month</span>
+                        </div>
+                    </div>
+
+                    <div class="settings-group">
+                        <h4>Preferences</h4>
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <i data-lucide="moon"></i>
+                                <span>Dark Mode</span>
+                            </div>
+                            <input type="checkbox" id="profileDarkToggle" class="switch-toggle">
+                        </div>
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <i data-lucide="bell"></i>
+                                <span>Enable Notifications</span>
+                            </div>
+                            <input type="checkbox" id="profileNotifToggle" class="switch-toggle" checked>
+                        </div>
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <i data-lucide="indian-rupee"></i>
+                                <span>Default Currency</span>
+                            </div>
+                            <strong>INR (₹)</strong>
+                        </div>
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <i data-lucide="calendar"></i>
+                                <span>Date Format</span>
+                            </div>
+                            <strong>DD/MM/YYYY</strong>
+                        </div>
+                    </div>
+
+                    <div class="settings-group">
+                        <h4>Security &amp; PIN</h4>
+                        <div class="setting-item clickable" id="setPinItem">
+                            <div class="setting-info">
+                                <i data-lucide="lock"></i>
+                                <div>
+                                    <span>App Security PIN</span>
+                                    <small id="pinStatusText">Not Set (Tap to configure)</small>
+                                </div>
+                            </div>
+                            <i data-lucide="chevron-right"></i>
+                        </div>
+                    </div>
+
+                    <div class="settings-group">
+                        <h4>Data Management</h4>
+                        <div class="setting-item clickable" id="exportDataBtn">
+                            <div class="setting-info">
+                                <i data-lucide="download"></i>
+                                <span>Export Data (JSON)</span>
+                            </div>
+                            <i data-lucide="chevron-right"></i>
+                        </div>
+                        <div class="setting-item clickable" id="importDataBtn">
+                            <div class="setting-info">
+                                <i data-lucide="upload"></i>
+                                <span>Backup / Restore Data</span>
+                            </div>
+                            <i data-lucide="chevron-right"></i>
+                        </div>
+                        <div class="setting-item clickable danger" id="deleteAllDataBtn">
+                            <div class="setting-info">
+                                <i data-lucide="trash-2"></i>
+                                <span>Delete All Financial Data</span>
+                            </div>
+                            <i data-lucide="chevron-right"></i>
+                        </div>
+                        <div class="setting-item clickable danger" id="resetAccountBtn">
+                            <div class="setting-info">
+                                <i data-lucide="user-x"></i>
+                                <span>Delete Account &amp; Reset</span>
+                            </div>
+                            <i data-lucide="chevron-right"></i>
+                        </div>
+                    </div>
+
+                    <div class="app-version-footer">
+                        <span>SalaryWise Android App • v1.0.0</span>
+                    </div>
+                    <div style="height: 70px;"></div>
+                </section>
+
+            </main>
+
+            <!-- Prominent Floating Action Button "+ Add Expense" (Section 5, 14) -->
+            <button class="fab-add-expense" id="fabAddExpense">
+                <i data-lucide="plus"></i>
+                <span>Add Expense</span>
+            </button>
+
+            <!-- Android Bottom Navigation Bar (Section 14) -->
+            <nav class="android-bottom-nav">
+                <button class="nav-item active" data-nav="home">
+                    <i data-lucide="home"></i>
+                    <span>Home</span>
+                </button>
+                <button class="nav-item" data-nav="expenses">
+                    <i data-lucide="receipt"></i>
+                    <span>Expenses</span>
+                </button>
+                <button class="nav-item" data-nav="budget">
+                    <i data-lucide="pie-chart"></i>
+                    <span>Budget</span>
+                </button>
+                <button class="nav-item" data-nav="analytics">
+                    <i data-lucide="bar-chart-3"></i>
+                    <span>Analytics</span>
+                </button>
+                <button class="nav-item" data-nav="goals">
+                    <i data-lucide="piggy-bank"></i>
+                    <span>Goals</span>
+                </button>
+            </nav>
+
+            <!-- Android Bottom Gesture Bar -->
+            <div class="android-home-indicator"></div>
+        </div>
+    </div>
+
+    <!-- MODAL 1: ADD EXPENSE BOTTOM SHEET (Section 5) -->
+    <div class="bottom-sheet-overlay" id="addExpenseModal">
+        <div class="bottom-sheet">
+            <div class="sheet-handle"></div>
+            <div class="sheet-header">
+                <h3>Add New Expense</h3>
+                <button class="icon-btn close-btn" onclick="closeModal('addExpenseModal')">
+                    <i data-lucide="x"></i>
+                </button>
+            </div>
+            <form id="addExpenseForm" class="sheet-form">
+                <div class="input-field">
+                    <label>Amount (₹) <span class="required">*</span></label>
+                    <div class="input-with-symbol">
+                        <span class="curr-prefix">₹</span>
+                        <input type="number" id="expAmount" placeholder="0" required step="1">
+                    </div>
+                </div>
+
+                <div class="input-field">
+                    <label>Category <span class="required">*</span></label>
+                    <select id="expCategory" required></select>
+                </div>
+
+                <div class="input-field">
+                    <label>Date (DD/MM/YYYY) <span class="required">*</span></label>
+                    <input type="text" id="expDate" required placeholder="DD/MM/YYYY">
+                </div>
+
+                <div class="input-field">
+                    <label>Payment Method <span class="required">*</span></label>
+                    <select id="expPaymentMethod" required>
+                        <option value="UPI" selected>UPI</option>
+                        <option value="Cash">Cash</option>
+                        <option value="Debit Card">Debit Card</option>
+                        <option value="Credit Card">Credit Card</option>
+                        <option value="Bank Transfer">Bank Transfer</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+
+                <div class="input-field">
+                    <label>Description / Note (Optional)</label>
+                    <input type="text" id="expDesc" placeholder="e.g. Grocery store, Uber ride">
+                </div>
+
+                <div class="checkbox-row">
+                    <input type="checkbox" id="expIsRecurring">
+                    <label for="expIsRecurring">Mark as recurring monthly expense</label>
+                </div>
+
+                <button type="submit" class="primary-btn btn-large w-100">
+                    <i data-lucide="check"></i> Save Expense
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 2: ADD SALARY RECORD -->
+    <div class="bottom-sheet-overlay" id="addSalaryModal">
+        <div class="bottom-sheet">
+            <div class="sheet-handle"></div>
+            <div class="sheet-header">
+                <h3>Record Monthly Salary</h3>
+                <button class="icon-btn close-btn" onclick="closeModal('addSalaryModal')">
+                    <i data-lucide="x"></i>
+                </button>
+            </div>
+            <form id="addSalaryForm" class="sheet-form">
+                <div class="input-field">
+                    <label>Salary Month (e.g. July 2026)</label>
+                    <input type="month" id="salMonth" required>
+                </div>
+                <div class="input-field">
+                    <label>Gross Salary (₹)</label>
+                    <input type="number" id="salGross" placeholder="45000" required>
+                </div>
+                <div class="input-field">
+                    <label>Deductions (EPF, Tax, Insurance) (₹)</label>
+                    <input type="number" id="salDeductions" placeholder="5000" value="0">
+                </div>
+                <div class="calculated-preview">
+                    <span>Net In-Hand Salary:</span>
+                    <strong id="salCalculatedInHand">₹45,000</strong>
+                </div>
+                <div class="input-field">
+                    <label>Payment Date (DD/MM/YYYY)</label>
+                    <input type="text" id="salDate" placeholder="DD/MM/YYYY">
+                </div>
+                <div class="input-field">
+                    <label>Notes</label>
+                    <input type="text" id="salNotes" placeholder="e.g. Annual bonus included">
+                </div>
+                <button type="submit" class="primary-btn btn-large w-100">Save Salary</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 3: ADD SAVINGS GOAL -->
+    <div class="bottom-sheet-overlay" id="addGoalModal">
+        <div class="bottom-sheet">
+            <div class="sheet-handle"></div>
+            <div class="sheet-header">
+                <h3>New Savings Goal</h3>
+                <button class="icon-btn close-btn" onclick="closeModal('addGoalModal')">
+                    <i data-lucide="x"></i>
+                </button>
+            </div>
+            <form id="addGoalForm" class="sheet-form">
+                <div class="input-field">
+                    <label>Goal Name</label>
+                    <input type="text" id="goalTitle" placeholder="e.g. New Laptop, Vacation, Car" required>
+                </div>
+                <div class="input-field">
+                    <label>Target Amount (₹)</label>
+                    <input type="number" id="goalTarget" placeholder="80000" required>
+                </div>
+                <div class="input-field">
+                    <label>Current Initial Amount (₹)</label>
+                    <input type="number" id="goalCurrent" placeholder="10000" value="0">
+                </div>
+                <div class="input-field">
+                    <label>Monthly Contribution (₹)</label>
+                    <input type="number" id="goalMonthly" placeholder="5000" value="5000">
+                </div>
+                <button type="submit" class="primary-btn btn-large w-100">Create Savings Goal</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 4: DEPOSIT TO GOAL -->
+    <div class="bottom-sheet-overlay" id="depositGoalModal">
+        <div class="bottom-sheet">
+            <div class="sheet-handle"></div>
+            <div class="sheet-header">
+                <h3 id="depositModalTitle">Add Money to Goal</h3>
+                <button class="icon-btn close-btn" onclick="closeModal('depositGoalModal')">
+                    <i data-lucide="x"></i>
+                </button>
+            </div>
+            <form id="depositGoalForm" class="sheet-form">
+                <input type="hidden" id="depositGoalId">
+                <div class="input-field">
+                    <label>Deposit Amount (₹)</label>
+                    <input type="number" id="depositAmount" placeholder="2000" required>
+                </div>
+                <div class="input-field">
+                    <label>Note (Optional)</label>
+                    <input type="text" id="depositNote" placeholder="e.g. Monthly transfer">
+                </div>
+                <button type="submit" class="primary-btn btn-large w-100">Deposit Money</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 5: ADD RECURRING BILL -->
+    <div class="bottom-sheet-overlay" id="addRecurringModal">
+        <div class="bottom-sheet">
+            <div class="sheet-handle"></div>
+            <div class="sheet-header">
+                <h3>Add Recurring Bill</h3>
+                <button class="icon-btn close-btn" onclick="closeModal('addRecurringModal')">
+                    <i data-lucide="x"></i>
+                </button>
+            </div>
+            <form id="addRecurringForm" class="sheet-form">
+                <div class="input-field">
+                    <label>Bill Name</label>
+                    <input type="text" id="recName" placeholder="e.g. Netflix, Electricity, Rent" required>
+                </div>
+                <div class="input-field">
+                    <label>Amount (₹)</label>
+                    <input type="number" id="recAmount" placeholder="1500" required>
+                </div>
+                <div class="input-field">
+                    <label>Category</label>
+                    <select id="recCategory"></select>
+                </div>
+                <div class="input-field">
+                    <label>Frequency</label>
+                    <select id="recFrequency">
+                        <option value="Monthly" selected>Monthly</option>
+                        <option value="Weekly">Weekly</option>
+                        <option value="Quarterly">Quarterly</option>
+                        <option value="Yearly">Yearly</option>
+                    </select>
+                </div>
+                <div class="input-field">
+                    <label>Next Due Date (DD/MM/YYYY)</label>
+                    <input type="text" id="recDueDate" placeholder="DD/MM/YYYY" required>
+                </div>
+                <button type="submit" class="primary-btn btn-large w-100">Save Recurring Bill</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 6: ADD CUSTOM BUDGET CATEGORY -->
+    <div class="bottom-sheet-overlay" id="addCategoryModal">
+        <div class="bottom-sheet">
+            <div class="sheet-handle"></div>
+            <div class="sheet-header">
+                <h3>Add Custom Budget Category</h3>
+                <button class="icon-btn close-btn" onclick="closeModal('addCategoryModal')">
+                    <i data-lucide="x"></i>
+                </button>
+            </div>
+            <form id="addCategoryForm" class="sheet-form">
+                <div class="input-field">
+                    <label>Category Name</label>
+                    <input type="text" id="customCatName" placeholder="e.g. Pet Care, Gaming" required>
+                </div>
+                <div class="input-field">
+                    <label>Allocated Monthly Budget (₹)</label>
+                    <input type="number" id="customCatBudget" placeholder="2500" required>
+                </div>
+                <button type="submit" class="primary-btn btn-large w-100">Add Category</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 7: CONFIGURE PIN -->
+    <div class="bottom-sheet-overlay" id="pinModal">
+        <div class="bottom-sheet">
+            <div class="sheet-handle"></div>
+            <div class="sheet-header">
+                <h3>Set 4-Digit Security PIN</h3>
+                <button class="icon-btn close-btn" onclick="closeModal('pinModal')">
+                    <i data-lucide="x"></i>
+                </button>
+            </div>
+            <form id="pinForm" class="sheet-form">
+                <div class="input-field">
+                    <label>Enter 4-digit PIN (leave empty to disable)</label>
+                    <input type="password" id="inputPinVal" maxlength="4" placeholder="••••">
+                </div>
+                <button type="submit" class="primary-btn btn-large w-100">Save Security Setting</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 8: CONFIRM DELETE DIALOG -->
+    <div class="dialog-overlay" id="confirmDeleteModal">
+        <div class="dialog-card">
+            <h3 id="confirmDeleteTitle">Confirm Deletion</h3>
+            <p id="confirmDeleteMessage">Are you sure you want to delete this record?</p>
+            <div class="dialog-buttons">
+                <button class="pill-btn" onclick="closeModal('confirmDeleteModal')">Cancel</button>
+                <button class="pill-btn danger" id="confirmDeleteActionBtn">Delete</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- PIN LOCK SCREEN OVERLAY -->
+    <div class="pin-lock-overlay" id="pinLockOverlay">
+        <div class="pin-lock-box">
+            <div class="lock-icon-circle">
+                <i data-lucide="lock"></i>
+            </div>
+            <h2>SalaryWise Locked</h2>
+            <p>Enter your 4-digit PIN to access your finances</p>
+            <div class="pin-dots-row">
+                <span class="p-dot" id="dot0"></span>
+                <span class="p-dot" id="dot1"></span>
+                <span class="p-dot" id="dot2"></span>
+                <span class="p-dot" id="dot3"></span>
+            </div>
+            <span class="pin-error-text" id="pinError"></span>
+            <div class="pin-keypad">
+                <button class="key-btn" onclick="pressKey('1')">1</button>
+                <button class="key-btn" onclick="pressKey('2')">2</button>
+                <button class="key-btn" onclick="pressKey('3')">3</button>
+                <button class="key-btn" onclick="pressKey('4')">4</button>
+                <button class="key-btn" onclick="pressKey('5')">5</button>
+                <button class="key-btn" onclick="pressKey('6')">6</button>
+                <button class="key-btn" onclick="pressKey('7')">7</button>
+                <button class="key-btn" onclick="pressKey('8')">8</button>
+                <button class="key-btn" onclick="pressKey('9')">9</button>
+                <button class="key-btn empty"></button>
+                <button class="key-btn" onclick="pressKey('0')">0</button>
+                <button class="key-btn del" onclick="pressKey('DEL')"><i data-lucide="delete"></i></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Application Logic & Charts Script -->
+    <script src="app.js"></script>
+</body>
+</html>

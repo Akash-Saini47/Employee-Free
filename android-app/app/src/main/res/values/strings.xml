@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">SalaryWise</string>
+    <string name="tagline">Smart Salary &amp; Financial Management for Employees</string>
+    <string name="currency_symbol">₹</string>
+    <string name="currency_code">INR</string>
+    <string name="default_date_format">dd/MM/yyyy</string>
+</resources>
