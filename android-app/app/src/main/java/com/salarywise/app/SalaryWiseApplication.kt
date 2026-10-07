@@ -1,6 +1,7 @@
 package com.salarywise.app
 
 import android.app.Application
+import androidx.work.Configuration
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
@@ -11,12 +12,6 @@ import java.util.concurrent.TimeUnit
 
 class SalaryWiseApplication : Application() {
 
-    /**
-     * Do not open Room or initialize WorkManager from Application.onCreate().
-     * Either operation can fail on a broken/legacy device state and an
-     * exception here kills the entire Android process before MainActivity can
-     * display a recovery UI.
-     */
     val database: SalaryWiseDatabase by lazy {
         SalaryWiseDatabase.getDatabase(this)
     }
@@ -27,6 +22,17 @@ class SalaryWiseApplication : Application() {
 
     fun scheduleBillRemindersSafely() {
         try {
+            // WorkManager auto-initialization is disabled in the manifest.
+            // Initialize it only after MainActivity is running.
+            try {
+                WorkManager.initialize(
+                    applicationContext,
+                    Configuration.Builder().build()
+                )
+            } catch (_: IllegalStateException) {
+                // Already initialized; continue to getInstance().
+            }
+
             val reminderRequest = PeriodicWorkRequestBuilder<BillReminderWorker>(
                 1, TimeUnit.DAYS
             ).build()
@@ -37,13 +43,13 @@ class SalaryWiseApplication : Application() {
                 reminderRequest
             )
         } catch (_: Throwable) {
-            // Reminders are non-critical. Never crash the application because
-            // WorkManager cannot initialize or schedule on a particular device.
+            // Reminders are non-critical. Never crash SalaryWise because
+            // WorkManager cannot initialize or schedule on a device.
         }
     }
 
     override fun onCreate() {
         super.onCreate()
-        // Intentionally no database or WorkManager initialization here.
+        // No Room or WorkManager initialization here.
     }
 }
