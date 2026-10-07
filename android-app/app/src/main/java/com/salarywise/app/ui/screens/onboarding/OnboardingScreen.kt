@@ -23,6 +23,8 @@ import com.salarywise.app.ui.theme.PrimaryLight
 
 @Composable
 fun OnboardingScreen(
+    isCreating: Boolean = false,
+    errorMessage: String? = null,
     onComplete: (
         name: String,
         salary: Double,
@@ -194,7 +196,25 @@ fun OnboardingScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
+            if (errorMessage != null) {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.errorContainer
+                    )
+                ) {
+                    Text(
+                        text = errorMessage,
+                        modifier = Modifier.padding(16.dp),
+                        color = MaterialTheme.colorScheme.onErrorContainer,
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
+                Spacer(modifier = Modifier.height(12.dp))
+            }
+
             Button(
+                enabled = !isCreating,
                 onClick = {
                     val salaryVal = monthlySalary.toDoubleOrNull() ?: 40000.0
                     val dateVal = salaryDate.toIntOrNull() ?: 1
