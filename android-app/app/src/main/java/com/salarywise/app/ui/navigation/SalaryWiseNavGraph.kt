@@ -1,6 +1,5 @@
 package com.salarywise.app.ui.navigation
 
-import android.database.sqlite.SQLiteException
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.*
@@ -44,9 +43,11 @@ fun SalaryWiseNavGraph(
     modifier: Modifier = Modifier
 ) {
     val coroutineScope = rememberCoroutineScope()
-    var onboardingError by remember { mutableStateOf<String?>(null) }
-    var isCreatingProfile by remember { mutableStateOf(false) }
-    var isUnlocked by remember { mutableStateOf(currentUser?.pinHash == null) }
+    var isCreatingProfile by rememberSaveable { mutableStateOf(false) }
+    var onboardingError by rememberSaveable { mutableStateOf<String?>(null) }
+    var isUnlocked by rememberSaveable(currentUser?.id) {
+        mutableStateOf(currentUser?.pinHash == null)
+    }
 
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
@@ -61,7 +62,7 @@ fun SalaryWiseNavGraph(
 
     if (currentUser?.pinHash != null && !isUnlocked) {
         PinLockScreen(
-            expectedPinHash = currentUser.pinHash,
+            expectedPin = currentUser.pinHash,
             onUnlocked = { isUnlocked = true }
         )
         return
@@ -91,28 +92,31 @@ fun SalaryWiseNavGraph(
                     errorMessage = onboardingError,
                     onComplete = { name, salary, date, savings, essential, target, efTarget ->
                         if (isCreatingProfile) return@OnboardingScreen
+
+                        onboardingError = null
+                        isCreatingProfile = true
+
                         coroutineScope.launch {
-                            isCreatingProfile = true
-                            onboardingError = null
-                            try {
+                            runCatching {
                                 repository.completeOnboarding(
-                                    name, salary, date, savings, essential, target, efTarget
+                                    name = name,
+                                    monthlySalary = salary,
+                                    salaryDate = date,
+                                    currentSavings = savings,
+                                    essentialExpenses = essential,
+                                    monthlySavingsTarget = target,
+                                    emergencyFundTarget = efTarget
                                 )
+                            }.onSuccess {
                                 navController.navigate(Screen.Home.route) {
                                     popUpTo(Screen.Onboarding.route) { inclusive = true }
+                                    launchSingleTop = true
                                 }
-                            } catch (e: Exception) {
-                                onboardingError = when (e) {
-                                    is SQLiteException ->
-                                        "We couldn't save your profile to the local database. Please try again."
-                                    is IllegalArgumentException ->
-                                        "Some profile values are invalid. Please check the numbers and try again."
-                                    else ->
-                                        "Profile creation failed. Your entered data was not saved. Please try again."
-                                }
-                            } finally {
-                                isCreatingProfile = false
+                            }.onFailure { error ->
+                                onboardingError = error.userSafeMessage()
                             }
+
+                            isCreatingProfile = false
                         }
                     }
                 )
@@ -120,88 +124,56 @@ fun SalaryWiseNavGraph(
 
             composable(Screen.Home.route) {
                 val homeVm = remember { HomeViewModel(repository) }
-                HomeScreen(
-                    viewModel = homeVm,
-                    onNavigate = { route -> navController.navigate(route) }
-                )
+                HomeScreen(viewModel = homeVm, onNavigate = { route -> navController.navigate(route) })
             }
 
             composable(Screen.Expenses.route) {
                 val expenseVm = remember { ExpenseViewModel(repository) }
-                ExpenseScreen(
-                    viewModel = expenseVm,
-                    onNavigate = { route -> navController.navigate(route) }
-                )
+                ExpenseScreen(viewModel = expenseVm, onNavigate = { route -> navController.navigate(route) })
             }
 
             composable(Screen.Budget.route) {
                 val budgetVm = remember { BudgetViewModel(repository) }
-                BudgetScreen(
-                    viewModel = budgetVm,
-                    onNavigate = { route -> navController.navigate(route) }
-                )
+                BudgetScreen(viewModel = budgetVm, onNavigate = { route -> navController.navigate(route) })
             }
 
             composable(Screen.Analytics.route) {
                 val analyticsVm = remember { AnalyticsViewModel(repository) }
-                AnalyticsScreen(
-                    viewModel = analyticsVm,
-                    onNavigate = { route -> navController.navigate(route) }
-                )
+                AnalyticsScreen(viewModel = analyticsVm, onNavigate = { route -> navController.navigate(route) })
             }
 
             composable(Screen.Goals.route) {
                 val savingsVm = remember { SavingsViewModel(repository) }
-                SavingsScreen(
-                    viewModel = savingsVm,
-                    onNavigate = { route -> navController.navigate(route) }
-                )
+                SavingsScreen(viewModel = savingsVm, onNavigate = { route -> navController.navigate(route) })
             }
 
             composable(Screen.Salary.route) {
                 val salaryVm = remember { SalaryViewModel(repository) }
-                SalaryScreen(
-                    viewModel = salaryVm,
-                    onNavigateBack = { navController.popBackStack() }
-                )
+                SalaryScreen(viewModel = salaryVm, onNavigateBack = { navController.popBackStack() })
             }
 
             composable(Screen.Recurring.route) {
                 val recurringVm = remember { RecurringViewModel(repository) }
-                RecurringExpenseScreen(
-                    viewModel = recurringVm,
-                    onNavigateBack = { navController.popBackStack() }
-                )
+                RecurringExpenseScreen(viewModel = recurringVm, onNavigateBack = { navController.popBackStack() })
             }
 
             composable(Screen.FinancialFreedom.route) {
                 val ffVm = remember { FinancialFreedomViewModel(repository) }
-                FinancialFreedomScreen(
-                    viewModel = ffVm,
-                    onNavigateBack = { navController.popBackStack() }
-                )
+                FinancialFreedomScreen(viewModel = ffVm, onNavigateBack = { navController.popBackStack() })
             }
 
             composable(Screen.MonthlyReport.route) {
                 val reportVm = remember { MonthlyReportViewModel(repository) }
-                MonthlyReportScreen(
-                    viewModel = reportVm,
-                    onNavigateBack = { navController.popBackStack() }
-                )
+                MonthlyReportScreen(viewModel = reportVm, onNavigateBack = { navController.popBackStack() })
             }
 
             composable(Screen.HealthScore.route) {
                 val healthVm = remember { FinancialHealthScoreViewModel(repository) }
-                FinancialHealthScoreScreen(
-                    viewModel = healthVm,
-                    onNavigateBack = { navController.popBackStack() }
-                )
+                FinancialHealthScoreScreen(viewModel = healthVm, onNavigateBack = { navController.popBackStack() })
             }
 
             composable(Screen.Notifications.route) {
-                NotificationCenterScreen(
-                    onNavigateBack = { navController.popBackStack() }
-                )
+                NotificationCenterScreen(onNavigateBack = { navController.popBackStack() })
             }
 
             composable(Screen.Profile.route) {
@@ -218,5 +190,20 @@ fun SalaryWiseNavGraph(
                 )
             }
         }
+    }
+}
+
+private fun Throwable.userSafeMessage(): String {
+    val raw = message?.trim().orEmpty()
+    return when {
+        raw.contains("RoomDatabase", ignoreCase = true) ||
+            raw.contains("database", ignoreCase = true) ||
+            raw.contains("SQLite", ignoreCase = true) ||
+            raw.contains("migration", ignoreCase = true) ->
+            "Your local financial database could not be updated. Please retry. If this continues, reinstall the latest SalaryWise version."
+
+        raw.isNotBlank() -> "Profile could not be created. Please check your details and try again."
+
+        else -> "Profile could not be created. Please try again."
     }
 }
