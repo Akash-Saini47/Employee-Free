@@ -24,6 +24,7 @@ import androidx.lifecycle.viewModelScope
 import com.salarywise.app.data.local.entity.UserEntity
 import com.salarywise.app.data.repository.SalaryWiseRepository
 import com.salarywise.app.domain.model.CurrencyFormatter
+import com.salarywise.app.domain.model.PinSecurity
 import com.salarywise.app.ui.components.ConfirmDeleteDialog
 import com.salarywise.app.ui.theme.AlertRose
 import kotlinx.coroutines.flow.*
@@ -65,7 +66,8 @@ class ProfileViewModel(private val repository: SalaryWiseRepository) : ViewModel
     fun updatePin(pin: String?) {
         viewModelScope.launch {
             val u = _user.value ?: return@launch
-            repository.updatePin(u.id, pin)
+            val stored = pin?.let { PinSecurity.hashPin(it) }
+            repository.updatePin(u.id, stored)
         }
     }
 
@@ -300,7 +302,7 @@ fun ProfileScreen(
                         SettingClickableItem(
                             icon = Icons.Default.Info,
                             title = "About SalaryWise",
-                            subtitle = "Version 1.0.0 • Financial Management for Employees",
+                            subtitle = "Version 1.1.0 • Financial Management for Employees",
                             onClick = { showAboutDialog = true }
                         )
                     }
@@ -497,7 +499,7 @@ fun SetPinDialog(
 fun AboutSalaryWiseDialog(onDismiss: () -> Unit) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("SalaryWise v1.0.0", fontWeight = FontWeight.Bold) },
+        title = { Text("SalaryWise v1.1.0", fontWeight = FontWeight.Bold) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text(

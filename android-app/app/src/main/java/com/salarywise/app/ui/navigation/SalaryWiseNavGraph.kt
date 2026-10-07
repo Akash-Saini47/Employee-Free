@@ -58,7 +58,7 @@ fun SalaryWiseNavGraph(
 
     if (currentUser?.pinHash != null && !isUnlocked) {
         PinLockScreen(
-            expectedPin = currentUser.pinHash,
+            expectedPinHash = currentUser.pinHash,
             onUnlocked = { isUnlocked = true }
         )
         return

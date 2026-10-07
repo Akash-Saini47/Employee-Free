@@ -17,14 +17,19 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.salarywise.app.ui.theme.AlertRose
+import com.salarywise.app.domain.model.PinSecurity
+import kotlinx.coroutines.launch
 
 @Composable
 fun PinLockScreen(
-    expectedPin: String,
+    expectedPinHash: String,
     onUnlocked: () -> Unit
 ) {
     var enteredPin by remember { mutableStateOf("") }
     var errorMessage by remember { mutableStateOf<String?>(null) }
+    var attempts by remember { mutableIntStateOf(0) }
+    var lockedUntil by remember { mutableLongStateOf(0L) }
+    val scope = rememberCoroutineScope()
 
     Scaffold { padding ->
         Column(
@@ -143,11 +148,28 @@ fun PinLockScreen(
                                             enteredPin = newPin
                                             errorMessage = null
                                             if (newPin.length == 4) {
-                                                if (newPin == expectedPin) {
-                                                    onUnlocked()
-                                                } else {
-                                                    errorMessage = "Incorrect PIN. Please try again."
+                                                val now = System.currentTimeMillis()
+                                                if (now < lockedUntil) {
+                                                    errorMessage = "Too many attempts. Try again in " + ((lockedUntil - now + 999) / 1000) + "s."
                                                     enteredPin = ""
+                                                } else {
+                                                    scope.launch {
+                                                        val valid = PinSecurity.verifyPin(newPin, expectedPinHash)
+                                                        if (valid) {
+                                                            attempts = 0
+                                                            onUnlocked()
+                                                        } else {
+                                                            attempts += 1
+                                                            enteredPin = ""
+                                                            if (attempts >= 5) {
+                                                                lockedUntil = System.currentTimeMillis() + 30_000L
+                                                                attempts = 0
+                                                                errorMessage = "Too many attempts. Try again in 30 seconds."
+                                                            } else {
+                                                                errorMessage = "Incorrect PIN. Please try again."
+                                                            }
+                                                        }
+                                                    }
                                                 }
                                             }
                                         }

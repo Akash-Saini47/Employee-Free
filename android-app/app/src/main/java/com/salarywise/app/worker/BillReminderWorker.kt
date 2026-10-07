@@ -5,6 +5,7 @@ import android.app.NotificationManager
 import android.content.Context
 import android.os.Build
 import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.salarywise.app.data.local.SalaryWiseDatabase
@@ -52,6 +53,8 @@ class BillReminderWorker(
             }
             notificationManager.createNotificationChannel(channel)
         }
+
+        if (!NotificationManagerCompat.from(context).areNotificationsEnabled()) return
 
         val notification = NotificationCompat.Builder(context, channelId)
             .setSmallIcon(android.R.drawable.ic_dialog_info)
