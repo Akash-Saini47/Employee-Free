@@ -3,6 +3,7 @@ package com.salarywise.app.ui.navigation
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.*
@@ -62,7 +63,7 @@ fun SalaryWiseNavGraph(
 
     if (currentUser?.pinHash != null && !isUnlocked) {
         PinLockScreen(
-            expectedPin = currentUser.pinHash,
+            expectedPinHash = currentUser.pinHash,
             onUnlocked = { isUnlocked = true }
         )
         return
