@@ -41,7 +41,16 @@ jobs:
         working-directory: android-app
         run: gradle assembleDebug --no-daemon
 
+      - name: Publish debug APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: salarywise-debug-apk
+          path: android-app/app/build/outputs/apk/debug/*.apk
+          if-no-files-found: error
+          retention-days: 14
+
       - name: Android Emulator smoke test
+        timeout-minutes: 10
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 35
