@@ -11,6 +11,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -24,6 +25,7 @@ import androidx.lifecycle.viewModelScope
 import com.salarywise.app.data.local.entity.UserEntity
 import com.salarywise.app.data.repository.SalaryWiseRepository
 import com.salarywise.app.domain.model.CurrencyFormatter
+import com.salarywise.app.domain.model.PinSecurity
 import com.salarywise.app.ui.components.ConfirmDeleteDialog
 import com.salarywise.app.ui.theme.AlertRose
 import kotlinx.coroutines.flow.*
@@ -62,10 +64,11 @@ class ProfileViewModel(private val repository: SalaryWiseRepository) : ViewModel
         }
     }
 
-    fun updatePin(pin: String?) {
+    fun updatePin(pin: String?, context: android.content.Context) {
         viewModelScope.launch {
             val u = _user.value ?: return@launch
-            repository.updatePin(u.id, pin)
+            val stored = pin?.let { PinSecurity.hashPin(context, it) }
+            repository.updatePin(u.id, stored)
         }
     }
 
@@ -300,7 +303,7 @@ fun ProfileScreen(
                         SettingClickableItem(
                             icon = Icons.Default.Info,
                             title = "About SalaryWise",
-                            subtitle = "Version 1.0.0 • Financial Management for Employees",
+                            subtitle = "Version 1.1.0 • Financial Management for Employees",
                             onClick = { showAboutDialog = true }
                         )
                     }
@@ -339,7 +342,7 @@ fun ProfileScreen(
         SetPinDialog(
             onDismiss = { showPinDialog = false },
             onSavePin = { pin ->
-                viewModel.updatePin(pin)
+                viewModel.updatePin(pin, LocalContext.current)
                 showPinDialog = false
             }
         )
@@ -497,7 +500,7 @@ fun SetPinDialog(
 fun AboutSalaryWiseDialog(onDismiss: () -> Unit) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("SalaryWise v1.0.0", fontWeight = FontWeight.Bold) },
+        title = { Text("SalaryWise v1.1.0", fontWeight = FontWeight.Bold) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text(
