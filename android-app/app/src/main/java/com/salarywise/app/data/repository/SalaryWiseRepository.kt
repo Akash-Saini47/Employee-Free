@@ -38,7 +38,22 @@ class SalaryWiseRepository(private val db: SalaryWiseDatabase) {
         emergencyFundTarget: Double
     ): UserEntity = withContext(Dispatchers.IO) {
         db.withTransaction {
-        val userId = UUID.randomUUID().toString()
+        val existingUser = userDao.getCurrentUser()
+        if (existingUser?.isOnboardingCompleted == true) {
+            throw IllegalStateException("A completed profile already exists.")
+        }
+
+        val userId = existingUser?.id ?: UUID.randomUUID().toString()
+        if (existingUser != null) {
+            // Recover safely from an older/partially-created onboarding record.
+            expenseDao.deleteAllExpenses(userId)
+            recurringDao.deleteAllRecurringExpenses(userId)
+            savingsDao.deleteAllGoals(userId)
+            salaryDao.deleteAllSalaries(userId)
+            reportDao.deleteAllReports(userId)
+            budgetDao.deleteAllBudgets(userId)
+        }
+
         val user = UserEntity(
             id = userId,
             name = name.ifBlank { "User" },
@@ -50,7 +65,11 @@ class SalaryWiseRepository(private val db: SalaryWiseDatabase) {
             emergencyFundTarget = emergencyFundTarget,
             isOnboardingCompleted = true
         )
-        userDao.insertUser(user)
+        if (existingUser == null) {
+            userDao.insertUser(user)
+        } else {
+            userDao.updateUser(user)
+        }
 
         // Automatically create the first monthly financial plan
         val currentMonth = DateUtils.getCurrentMonthYear()
