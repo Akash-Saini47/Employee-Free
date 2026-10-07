@@ -41,6 +41,32 @@ jobs:
         working-directory: android-app
         run: gradle assembleDebug --no-daemon
 
+      - name: Android Emulator smoke test
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 35
+          target: google_apis
+          arch: x86_64
+          profile: pixel_2
+          force-avd-creation: true
+          emulator-options: -no-window -no-audio -no-boot-anim -gpu swiftshader_indirect
+          disable-animations: true
+          working-directory: android-app
+          script: gradle connectedDebugAndroidTest --no-daemon
+
+      - name: Capture emulator logcat
+        if: always()
+        run: adb logcat -d > salarywise-logcat.txt || true
+
+      - name: Upload emulator logcat
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: salarywise-emulator-logcat
+          path: salarywise-logcat.txt
+          if-no-files-found: ignore
+          retention-days: 14
+
       - name: Assemble release APK
         working-directory: android-app
         run: gradle assembleRelease --no-daemon
