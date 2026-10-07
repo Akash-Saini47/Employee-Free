@@ -13,7 +13,7 @@ interface UserDao {
     @Query("SELECT * FROM users LIMIT 1")
     fun getCurrentUserFlow(): Flow<UserEntity?>
 
-    @Query("SELECT * FROM users LIMIT 1")
+    @Query("SELECT * FROM users ORDER BY createdAt DESC LIMIT 1")
     suspend fun getCurrentUser(): UserEntity?
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
