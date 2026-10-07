@@ -258,7 +258,6 @@ class SalaryWiseRepository(private val db: SalaryWiseDatabase) {
     suspend fun getAllGoals(userId: String): List<SavingsGoalEntity> = savingsDao.getAllGoals(userId)
     fun getEmergencyFundGoalFlow(userId: String): Flow<SavingsGoalEntity?> = savingsDao.getEmergencyFundGoalFlow(userId)
     suspend fun getEmergencyFundGoal(userId: String): SavingsGoalEntity? = savingsDao.getEmergencyFundGoal(userId)
-    fun getActiveRecurringExpensesFlow(userId: String): Flow<List<RecurringExpenseEntity>> = recurringDao.getActiveRecurringExpensesFlow(userId)
 
     suspend fun saveGoal(goal: SavingsGoalEntity) = withContext(Dispatchers.IO) {
         savingsDao.insertGoal(goal)
