@@ -20,8 +20,11 @@ class SalaryWiseSmokeTest {
 
         composeRule.waitForIdle()
 
-        // Give the database transaction and navigation enough time to finish.
-        Thread.sleep(3000)
+        // Wait for the onboarding transaction/navigation instead of using a fixed delay.
+        composeRule.waitUntil(timeoutMillis = 10_000) {
+            composeRule.onAllNodesWithText("SalaryWise", substring = true, useUnmergedTree = true)
+                .fetchSemanticsNodes().isNotEmpty()
+        }
 
         composeRule.onNodeWithText("SalaryWise", substring = true, useUnmergedTree = true)
             .assertIsDisplayed()
