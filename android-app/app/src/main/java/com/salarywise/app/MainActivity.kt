@@ -20,8 +20,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.rememberNavController
+import com.salarywise.app.data.local.entity.UserEntity
 import com.salarywise.app.ui.navigation.SalaryWiseNavGraph
 import com.salarywise.app.ui.theme.SalaryWiseTheme
 import kotlinx.coroutines.flow.catch
@@ -29,7 +29,7 @@ import kotlinx.coroutines.flow.collect
 
 private sealed interface UserLoadState {
     data object Loading : UserLoadState
-    data class Loaded(val user: com.salarywise.app.data.local.entity.UserEntity?) : UserLoadState
+    data class Loaded(val user: UserEntity?) : UserLoadState
     data class Error(val message: String) : UserLoadState
 }
 
@@ -38,7 +38,31 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         val app = application as SalaryWiseApplication
-        val repository = app.repository
+
+        // Access the lazy repository only inside a guarded block. This allows
+        // the Activity to remain alive and show a recovery screen if Room
+        // cannot be opened on a particular device.
+        val repositoryResult = runCatching { app.repository }
+
+        if (repositoryResult.isFailure) {
+            setContent {
+                SalaryWiseTheme(darkTheme = isSystemInDarkTheme()) {
+                    Surface(
+                        modifier = Modifier.fillMaxSize(),
+                        color = MaterialTheme.colorScheme.background
+                    ) {
+                        DatabaseErrorScreen(
+                            message = repositoryResult.exceptionOrNull()?.message
+                                ?: "Unable to initialize local storage.",
+                            onRetry = { recreate() }
+                        )
+                    }
+                }
+            }
+            return
+        }
+
+        val repository = repositoryResult.getOrThrow()
 
         setContent {
             var userState by remember { mutableStateOf<UserLoadState>(UserLoadState.Loading) }
@@ -55,10 +79,14 @@ class MainActivity : ComponentActivity() {
                     }
             }
 
-            val currentUser =
-                (userState as? UserLoadState.Loaded)?.user
-            val isDarkTheme =
-                currentUser?.isDarkMode ?: isSystemInDarkTheme()
+            // Scheduling reminders is optional. It is deliberately outside
+            // Application.onCreate so WorkManager cannot prevent app startup.
+            LaunchedEffect(Unit) {
+                app.scheduleBillRemindersSafely()
+            }
+
+            val currentUser = (userState as? UserLoadState.Loaded)?.user
+            val isDarkTheme = currentUser?.isDarkMode ?: isSystemInDarkTheme()
 
             SalaryWiseTheme(darkTheme = isDarkTheme) {
                 Surface(
@@ -73,10 +101,7 @@ class MainActivity : ComponentActivity() {
                                 verticalArrangement = Arrangement.Center
                             ) {
                                 CircularProgressIndicator()
-                                Text(
-                                    text = "Loading SalaryWise...",
-                                    modifier = Modifier
-                                )
+                                Text("Loading SalaryWise...")
                             }
                         }
 
