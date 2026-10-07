@@ -60,31 +60,47 @@ class AnalyticsViewModel(private val repository: SalaryWiseRepository) : ViewMod
                 }
 
                 val currentMonth = DateUtils.getCurrentMonthYear()
-                val (start, end) = when (range) {
-                    AnalyticsTimeRange.THIS_MONTH -> DateUtils.getStartAndEndOfMonth(currentMonth)
-                    AnalyticsTimeRange.LAST_MONTH -> DateUtils.getStartAndEndOfMonth(DateUtils.getPreviousMonthYear(currentMonth))
-                    AnalyticsTimeRange.LAST_3_MONTHS -> DateUtils.getRangeForMonthsAgo(3)
-                    AnalyticsTimeRange.LAST_6_MONTHS -> DateUtils.getRangeForMonthsAgo(6)
-                    AnalyticsTimeRange.THIS_YEAR -> DateUtils.getStartAndEndOfCurrentYear()
+                val monthYears = when (range) {
+                    AnalyticsTimeRange.THIS_MONTH -> listOf(currentMonth)
+                    AnalyticsTimeRange.LAST_MONTH -> listOf(DateUtils.getPreviousMonthYear(currentMonth))
+                    AnalyticsTimeRange.LAST_3_MONTHS -> (0 until 3).map { offset ->
+                        var month = currentMonth
+                        repeat(offset) { month = DateUtils.getPreviousMonthYear(month) }
+                        month
+                    }.reversed()
+                    AnalyticsTimeRange.LAST_6_MONTHS -> (0 until 6).map { offset ->
+                        var month = currentMonth
+                        repeat(offset) { month = DateUtils.getPreviousMonthYear(month) }
+                        month
+                    }.reversed()
+                    AnalyticsTimeRange.THIS_YEAR -> {
+                        val current = currentMonth.substringAfter('-').toInt()
+                        (1..current).map { month -> String.format("%04d-%02d", currentMonth.substringBefore('-').toInt(), month) }
+                    }
+                }
+                val (start, end) = if (range == AnalyticsTimeRange.THIS_YEAR) {
+                    val first = DateUtils.getStartAndEndOfMonth(monthYears.first()).first
+                    val last = DateUtils.getStartAndEndOfMonth(currentMonth).second
+                    first to last
+                } else {
+                    DateUtils.getStartAndEndOfMonth(monthYears.first()).first to DateUtils.getStartAndEndOfMonth(monthYears.last()).second
                 }
 
                 val expenses = repository.getExpensesInRange(user.id, start, end)
                 val totalExp = expenses.sumOf { it.amount }
                 val highestExp = expenses.maxByOrNull { it.amount }
+                val monthsCount = monthYears.size
 
-                val salaryRecord = repository.getSalaryForMonth(user.id, currentMonth)
-                val monthsCount = when (range) {
-                    AnalyticsTimeRange.THIS_MONTH, AnalyticsTimeRange.LAST_MONTH -> 1
-                    AnalyticsTimeRange.LAST_3_MONTHS -> 3
-                    AnalyticsTimeRange.LAST_6_MONTHS -> 6
-                    AnalyticsTimeRange.THIS_YEAR -> 12
+                val income = monthYears.sumOf { month ->
+                    repository.getSalaryForMonth(user.id, month)?.inHandSalary ?: user.monthlyInHandSalary
                 }
-                val income = (salaryRecord?.inHandSalary ?: user.monthlyInHandSalary) * monthsCount
                 val savings = (income - totalExp).coerceAtLeast(0.0)
                 val sRate = FinancialCalculations.calculateSavingsRate(savings, income)
 
-                val budget = repository.getBudgetForMonth(user.id, currentMonth)
-                val totalBudget = (budget?.totalBudget ?: (user.monthlyInHandSalary * 0.70)) * monthsCount
+                val totalBudget = monthYears.sumOf { month ->
+                    val monthSalary = repository.getSalaryForMonth(user.id, month)?.inHandSalary ?: user.monthlyInHandSalary
+                    repository.getBudgetForMonth(user.id, month)?.totalBudget ?: (monthSalary * 0.70)
+                }
                 val bUtil = FinancialCalculations.calculateBudgetUtilization(totalExp, totalBudget)
 
                 val catTotals = repository.getCategoryTotalsInRange(user.id, start, end)
@@ -108,7 +124,7 @@ class AnalyticsViewModel(private val repository: SalaryWiseRepository) : ViewMod
                         highestSpendingCategory = highestCat,
                         lowestSpendingCategory = lowestCat,
                         categoryBreakdown = catTotals,
-                        monthlySalaries = allSalaries.sortedBy { s -> s.monthYear },
+                        monthlySalaries = allSalaries.filter { it.monthYear in monthYears }.sortedBy { s -> s.monthYear },
                         isLoading = false
                     )
                 }
