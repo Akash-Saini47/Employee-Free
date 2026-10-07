@@ -19,14 +19,14 @@ import com.salarywise.app.data.local.entity.*
         SavingsContributionEntity::class,
         FinancialReportEntity::class
     ],
-    // v4 intentionally invalidates all legacy local databases. Previous
+    // v5 intentionally invalidates all legacy local databases. Previous
     // releases used schema version 1 and then shipped an incompatible
     // migration/recovery attempt. Keeping the same schema version would make
     // an already-installed broken DB survive an update.
     //
-    // This app stores local financial data only. A clean v4 database is safer
+    // This app stores local financial data only. A clean v5 database is safer
     // than repeatedly opening a potentially partial/corrupt legacy database.
-    version = 4,
+    version = 5,
     exportSchema = false
 )
 abstract class SalaryWiseDatabase : RoomDatabase() {
@@ -59,7 +59,7 @@ abstract class SalaryWiseDatabase : RoomDatabase() {
                 SalaryWiseDatabase::class.java,
                 DATABASE_NAME
             )
-                // Any database from versions 1–3 is intentionally discarded.
+                // Any database from versions 1–4 is intentionally discarded.
                 // This guarantees that the broken/partial legacy onboarding
                 // state cannot be reopened after updating the app.
                 .fallbackToDestructiveMigration()
