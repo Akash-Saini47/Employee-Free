@@ -1,5 +1,6 @@
 package com.salarywise.app.ui.navigation
 
+import android.database.sqlite.SQLiteException
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.*
@@ -43,6 +44,8 @@ fun SalaryWiseNavGraph(
     modifier: Modifier = Modifier
 ) {
     val coroutineScope = rememberCoroutineScope()
+    var onboardingError by remember { mutableStateOf<String?>(null) }
+    var isCreatingProfile by remember { mutableStateOf(false) }
     var isUnlocked by remember { mutableStateOf(currentUser?.pinHash == null) }
 
     val navBackStackEntry by navController.currentBackStackEntryAsState()
@@ -84,13 +87,31 @@ fun SalaryWiseNavGraph(
         ) {
             composable(Screen.Onboarding.route) {
                 OnboardingScreen(
+                    isCreating = isCreatingProfile,
+                    errorMessage = onboardingError,
                     onComplete = { name, salary, date, savings, essential, target, efTarget ->
+                        if (isCreatingProfile) return@OnboardingScreen
                         coroutineScope.launch {
-                            repository.completeOnboarding(
-                                name, salary, date, savings, essential, target, efTarget
-                            )
-                            navController.navigate(Screen.Home.route) {
-                                popUpTo(Screen.Onboarding.route) { inclusive = true }
+                            isCreatingProfile = true
+                            onboardingError = null
+                            try {
+                                repository.completeOnboarding(
+                                    name, salary, date, savings, essential, target, efTarget
+                                )
+                                navController.navigate(Screen.Home.route) {
+                                    popUpTo(Screen.Onboarding.route) { inclusive = true }
+                                }
+                            } catch (e: Exception) {
+                                onboardingError = when (e) {
+                                    is SQLiteException ->
+                                        "We couldn't save your profile to the local database. Please try again."
+                                    is IllegalArgumentException ->
+                                        "Some profile values are invalid. Please check the numbers and try again."
+                                    else ->
+                                        "Profile creation failed. Your entered data was not saved. Please try again."
+                                }
+                            } finally {
+                                isCreatingProfile = false
                             }
                         }
                     }
