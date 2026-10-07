@@ -11,29 +11,39 @@ import java.util.concurrent.TimeUnit
 
 class SalaryWiseApplication : Application() {
 
-    lateinit var database: SalaryWiseDatabase
-        private set
+    /**
+     * Do not open Room or initialize WorkManager from Application.onCreate().
+     * Either operation can fail on a broken/legacy device state and an
+     * exception here kills the entire Android process before MainActivity can
+     * display a recovery UI.
+     */
+    val database: SalaryWiseDatabase by lazy {
+        SalaryWiseDatabase.getDatabase(this)
+    }
 
-    lateinit var repository: SalaryWiseRepository
-        private set
+    val repository: SalaryWiseRepository by lazy {
+        SalaryWiseRepository(database)
+    }
+
+    fun scheduleBillRemindersSafely() {
+        try {
+            val reminderRequest = PeriodicWorkRequestBuilder<BillReminderWorker>(
+                1, TimeUnit.DAYS
+            ).build()
+
+            WorkManager.getInstance(applicationContext).enqueueUniquePeriodicWork(
+                "salarywise_bill_reminders",
+                ExistingPeriodicWorkPolicy.KEEP,
+                reminderRequest
+            )
+        } catch (_: Throwable) {
+            // Reminders are non-critical. Never crash the application because
+            // WorkManager cannot initialize or schedule on a particular device.
+        }
+    }
 
     override fun onCreate() {
         super.onCreate()
-        database = SalaryWiseDatabase.getDatabase(this)
-        repository = SalaryWiseRepository(database)
-
-        scheduleBillReminders()
-    }
-
-    private fun scheduleBillReminders() {
-        val reminderRequest = PeriodicWorkRequestBuilder<BillReminderWorker>(
-            1, TimeUnit.DAYS
-        ).build()
-
-        WorkManager.getInstance(this).enqueueUniquePeriodicWork(
-            "salarywise_bill_reminders",
-            ExistingPeriodicWorkPolicy.KEEP,
-            reminderRequest
-        )
+        // Intentionally no database or WorkManager initialization here.
     }
 }
