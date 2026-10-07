@@ -219,7 +219,7 @@ fun OnboardingScreen(
                 shape = RoundedCornerShape(14.dp)
             ) {
                 Text(
-                    text = "Create My Financial Plan",
+                    text = if (isCreating) "Creating Profile..." else "Create My Financial Plan",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold
                 )
