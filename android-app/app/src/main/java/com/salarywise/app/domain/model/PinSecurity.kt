@@ -1,6 +1,5 @@
 package com.salarywise.app.domain.model
 
-import android.content.Context
 import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties
 import java.nio.charset.StandardCharsets
@@ -30,8 +29,7 @@ object PinSecurity {
         return generator.generateKey()
     }
 
-    fun hashPin(context: Context, pin: String): String {
-        context.applicationContext
+    fun hashPin(pin: String): String {
         require(pin.length == 4 && pin.all(Char::isDigit)) { "PIN must contain exactly 4 digits" }
         val mac = Mac.getInstance(TRANSFORMATION)
         mac.init(getOrCreateKey())
@@ -39,9 +37,9 @@ object PinSecurity {
         return digest.joinToString("") { "%02x".format(it) }
     }
 
-    fun verifyPin(context: Context, pin: String, storedHash: String): Boolean {
+    fun verifyPin(pin: String, storedHash: String): Boolean {
         return try {
-            hashPin(context, pin) == storedHash
+            hashPin(pin) == storedHash
         } catch (_: Exception) {
             false
         }
