@@ -9,6 +9,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.withContext
+import androidx.room.withTransaction
 import org.json.JSONArray
 import org.json.JSONObject
 import java.util.UUID
@@ -36,6 +37,7 @@ class SalaryWiseRepository(private val db: SalaryWiseDatabase) {
         monthlySavingsTarget: Double,
         emergencyFundTarget: Double
     ): UserEntity = withContext(Dispatchers.IO) {
+        db.withTransaction {
         val userId = UUID.randomUUID().toString()
         val user = UserEntity(
             id = userId,
@@ -119,6 +121,7 @@ class SalaryWiseRepository(private val db: SalaryWiseDatabase) {
         savingsDao.insertGoal(emergencyGoal)
 
         user
+        }
     }
 
     suspend fun updateUser(user: UserEntity) = withContext(Dispatchers.IO) {
@@ -210,6 +213,7 @@ class SalaryWiseRepository(private val db: SalaryWiseDatabase) {
     }
 
     suspend fun payRecurringBill(recurring: RecurringExpenseEntity, paymentMethod: String = "UPI") = withContext(Dispatchers.IO) {
+        db.withTransaction {
         // 1. Log actual expense
         val expense = ExpenseEntity(
             id = UUID.randomUUID().toString(),
@@ -227,17 +231,20 @@ class SalaryWiseRepository(private val db: SalaryWiseDatabase) {
         // 2. Advance due date
         val nextDue = advanceDueDate(recurring.nextDueDate, recurring.frequency)
         recurringDao.updateRecurringExpense(recurring.copy(nextDueDate = nextDue))
+        }
     }
 
     private fun advanceDueDate(currentDue: Long, frequency: String): Long {
-        val cal = java.util.Calendar.getInstance()
-        cal.timeInMillis = currentDue
-        when (frequency.uppercase()) {
-            "WEEKLY" -> cal.add(java.util.Calendar.WEEK_OF_YEAR, 1)
-            "MONTHLY" -> cal.add(java.util.Calendar.MONTH, 1)
-            "QUARTERLY" -> cal.add(java.util.Calendar.MONTH, 3)
-            "YEARLY" -> cal.add(java.util.Calendar.YEAR, 1)
-            else -> cal.add(java.util.Calendar.MONTH, 1)
+        val cal = java.util.Calendar.getInstance().apply { timeInMillis = currentDue }
+        val now = System.currentTimeMillis()
+        while (cal.timeInMillis <= now) {
+            when (frequency.uppercase()) {
+                "WEEKLY" -> cal.add(java.util.Calendar.WEEK_OF_YEAR, 1)
+                "MONTHLY" -> cal.add(java.util.Calendar.MONTH, 1)
+                "QUARTERLY" -> cal.add(java.util.Calendar.MONTH, 3)
+                "YEARLY" -> cal.add(java.util.Calendar.YEAR, 1)
+                else -> cal.add(java.util.Calendar.MONTH, 1)
+            }
         }
         return cal.timeInMillis
     }
@@ -316,7 +323,17 @@ class SalaryWiseRepository(private val db: SalaryWiseDatabase) {
             largestExpenseName = highestExpName,
             expenseChangePercent = expChange,
             savingsChangePercent = savChange,
-            healthScore = 78,
+            healthScore = FinancialHealthScoreCalculator.calculateScore(
+                savingsRate = savingsRate,
+                budgetUtilization = budgetUsed,
+                emergencyFundMonths = run {
+                    val goal = savingsDao.getEmergencyFundGoal(userId)
+                    val essentials = userDao.getCurrentUser()?.monthlyEssentialExpenses ?: 0.0
+                    if (essentials > 0) (goal?.currentAmount ?: userDao.getCurrentUser()?.currentSavings ?: 0.0) / essentials else 0.0
+                },
+                isExpensesOverIncome = totalExpenses > income && income > 0,
+                hasEmergencyFundGoal = savingsDao.getEmergencyFundGoal(userId) != null
+            ).score,
             summaryText = "Income: ${CurrencyFormatter.formatInr(income)} | Expenses: ${CurrencyFormatter.formatInr(totalExpenses)} | Savings: ${CurrencyFormatter.formatInr(totalSavings)}"
         )
         reportDao.insertReport(report)
@@ -344,29 +361,48 @@ class SalaryWiseRepository(private val db: SalaryWiseDatabase) {
             }
         })
 
-        val expArray = JSONArray()
-        for (e in expenses) {
-            val obj = JSONObject().apply {
-                put("id", e.id)
-                put("amount", e.amount)
-                put("category", e.categoryName)
-                put("date", e.date)
-                put("paymentMethod", e.paymentMethod)
-                put("description", e.description)
-            }
-            expArray.put(obj)
-        }
-        root.put("expenses", expArray)
+        root.put("salaries", JSONArray(salaries.map { e -> JSONObject().apply {
+            put("monthYear", e.monthYear); put("grossSalary", e.grossSalary); put("deductions", e.deductions); put("inHandSalary", e.inHandSalary); put("paymentDate", e.paymentDate); put("notes", e.notes)
+        }}))
+        root.put("budgets", JSONArray(budgets.map { b -> JSONObject().apply {
+            put("monthYear", b.monthYear); put("totalBudget", b.totalBudget); put("categories", JSONArray(budgetDao.getCategoriesForBudget(b.id).map { c -> JSONObject().apply { put("category", c.categoryName); put("allocatedAmount", c.allocatedAmount); put("isCustom", c.isCustom) } }))
+        }}))
+        root.put("expenses", JSONArray(expenses.map { e -> JSONObject().apply {
+            put("id", e.id); put("amount", e.amount); put("category", e.categoryName); put("date", e.date); put("paymentMethod", e.paymentMethod); put("description", e.description); put("isRecurring", e.isRecurring)
+        }}))
+        root.put("recurringExpenses", JSONArray(recurring.map { e -> JSONObject().apply {
+            put("name", e.name); put("amount", e.amount); put("category", e.categoryName); put("frequency", e.frequency); put("nextDueDate", e.nextDueDate); put("isActive", e.isActive)
+        }}))
+        root.put("savingsGoals", JSONArray(goals.map { g -> JSONObject().apply {
+            put("title", g.title); put("targetAmount", g.targetAmount); put("currentAmount", g.currentAmount); put("monthlyContribution", g.monthlyContribution); put("category", g.category); put("targetDate", g.targetDate); put("isCompleted", g.isCompleted); put("isEmergencyFund", g.isEmergencyFund)
+        }}))
 
         root.toString(2)
     }
 
     suspend fun deleteAllUserData(userId: String) = withContext(Dispatchers.IO) {
-        expenseDao.deleteAllExpenses(userId)
-        recurringDao.deleteAllRecurringExpenses(userId)
-        savingsDao.deleteAllGoals(userId)
-        salaryDao.deleteAllSalaries(userId)
-        reportDao.deleteAllReports(userId)
+        db.withTransaction {
+            expenseDao.deleteAllExpenses(userId)
+            recurringDao.deleteAllRecurringExpenses(userId)
+            savingsDao.deleteAllGoals(userId)
+            salaryDao.deleteAllSalaries(userId)
+            budgetDao.deleteAllBudgets(userId)
+            reportDao.deleteAllReports(userId)
+            userDao.getCurrentUser()?.takeIf { it.id == userId }?.let { user ->
+                userDao.updateUser(
+                    user.copy(
+                        monthlyInHandSalary = 0.0,
+                        salaryDate = 1,
+                        currentSavings = 0.0,
+                        monthlyEssentialExpenses = 0.0,
+                        monthlySavingsTarget = 0.0,
+                        emergencyFundTarget = 0.0,
+                        pinHash = null,
+                        isBiometricEnabled = false
+                    )
+                )
+            }
+        }
     }
 
     suspend fun deleteAccount() = withContext(Dispatchers.IO) {
