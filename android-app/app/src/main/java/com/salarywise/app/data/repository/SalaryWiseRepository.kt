@@ -176,7 +176,10 @@ class SalaryWiseRepository(private val db: SalaryWiseDatabase) {
     // --- Expense Management ---
     fun getAllExpensesFlow(userId: String): Flow<List<ExpenseEntity>> = expenseDao.getAllExpensesFlow(userId)
     fun getExpensesInRangeFlow(userId: String, start: Long, end: Long): Flow<List<ExpenseEntity>> = expenseDao.getExpensesInRangeFlow(userId, start, end)
+    suspend fun getExpensesInRange(userId: String, start: Long, end: Long): List<ExpenseEntity> = expenseDao.getExpensesInRange(userId, start, end)
     fun getCategoryTotalsInRangeFlow(userId: String, start: Long, end: Long): Flow<List<CategoryTotal>> = expenseDao.getCategoryTotalsInRangeFlow(userId, start, end)
+    suspend fun getCategoryTotalsInRange(userId: String, start: Long, end: Long): List<CategoryTotal> = expenseDao.getCategoryTotalsInRange(userId, start, end)
+    suspend fun getTotalExpenseInRange(userId: String, start: Long, end: Long): Double = expenseDao.getTotalExpenseInRange(userId, start, end)
 
     fun filterExpensesFlow(
         userId: String,
@@ -203,6 +206,7 @@ class SalaryWiseRepository(private val db: SalaryWiseDatabase) {
     fun getActiveRecurringExpensesFlow(userId: String): Flow<List<RecurringExpenseEntity>> = recurringDao.getActiveRecurringExpensesFlow(userId)
     fun getAllRecurringExpensesFlow(userId: String): Flow<List<RecurringExpenseEntity>> = recurringDao.getAllRecurringExpensesFlow(userId)
     fun getUpcomingBillsFlow(userId: String, upToTimestamp: Long): Flow<List<RecurringExpenseEntity>> = recurringDao.getUpcomingBillsFlow(userId, upToTimestamp)
+    suspend fun getUpcomingBills(userId: String, upToTimestamp: Long): List<RecurringExpenseEntity> = recurringDao.getUpcomingBills(userId, upToTimestamp)
 
     suspend fun saveRecurringExpense(recurring: RecurringExpenseEntity) = withContext(Dispatchers.IO) {
         recurringDao.insertRecurringExpense(recurring)
@@ -251,7 +255,10 @@ class SalaryWiseRepository(private val db: SalaryWiseDatabase) {
 
     // --- Savings & Goals ---
     fun getAllGoalsFlow(userId: String): Flow<List<SavingsGoalEntity>> = savingsDao.getAllGoalsFlow(userId)
+    suspend fun getAllGoals(userId: String): List<SavingsGoalEntity> = savingsDao.getAllGoals(userId)
     fun getEmergencyFundGoalFlow(userId: String): Flow<SavingsGoalEntity?> = savingsDao.getEmergencyFundGoalFlow(userId)
+    suspend fun getEmergencyFundGoal(userId: String): SavingsGoalEntity? = savingsDao.getEmergencyFundGoal(userId)
+    fun getActiveRecurringExpensesFlow(userId: String): Flow<List<RecurringExpenseEntity>> = recurringDao.getActiveRecurringExpensesFlow(userId)
 
     suspend fun saveGoal(goal: SavingsGoalEntity) = withContext(Dispatchers.IO) {
         savingsDao.insertGoal(goal)
