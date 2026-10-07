@@ -11,7 +11,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -64,10 +63,10 @@ class ProfileViewModel(private val repository: SalaryWiseRepository) : ViewModel
         }
     }
 
-    fun updatePin(pin: String?, context: android.content.Context) {
+    fun updatePin(pin: String?) {
         viewModelScope.launch {
             val u = _user.value ?: return@launch
-            val stored = pin?.let { PinSecurity.hashPin(context, it) }
+            val stored = pin?.let { PinSecurity.hashPin(it) }
             repository.updatePin(u.id, stored)
         }
     }
@@ -342,7 +341,7 @@ fun ProfileScreen(
         SetPinDialog(
             onDismiss = { showPinDialog = false },
             onSavePin = { pin ->
-                viewModel.updatePin(pin, LocalContext.current)
+                viewModel.updatePin(pin)
                 showPinDialog = false
             }
         )
