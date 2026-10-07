@@ -365,7 +365,7 @@ erDiagram
 
 ## 🔒 Security & Privacy (Section 20)
 
-- **Local Storage First**: All records stay on the employee's personal device inside Room SQLite / local encrypted database.
+- **Local Storage First**: All records stay on the employee's personal device inside Room SQLite in Android app-private storage.
 - **PIN Lock Screen**: Optional 4-digit numeric PIN protection blocking unauthorized access upon opening the app.
-- **Data Export & Portability**: Instant one-click JSON backup generation.
+- **Data Export & Portability**: JSON export of stored financial records for manual backup/sharing.
 - **Complete Erasure**: Full compliance with data deletion standards via double-confirmation reset dialogs.
