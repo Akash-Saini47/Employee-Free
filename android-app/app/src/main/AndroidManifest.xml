@@ -14,17 +14,13 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.SalaryWise">
 
-        <!-- WorkManager is initialized lazily after the first Activity is alive.
-             This prevents an auto-initializer failure from killing the app
-             before MainActivity can display a recovery UI. -->
+        <!-- Disable AndroidX Startup's automatic WorkManager initializer.
+             SalaryWise does not schedule background work during startup. -->
         <provider
             android:name="androidx.startup.InitializationProvider"
             android:authorities="${applicationId}.androidx-startup"
-            android:exported="false">
-            <meta-data
-                android:name="androidx.work.WorkManagerInitializer"
-                tools:node="remove" />
-        </provider>
+            android:exported="false"
+            tools:node="remove" />
 
         <activity
             android:name=".MainActivity"
