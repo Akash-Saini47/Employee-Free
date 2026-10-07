@@ -44,7 +44,7 @@ class FinancialFreedomViewModel(private val repository: SalaryWiseRepository) : 
                 val efAmount = efGoal?.currentAmount ?: user.currentSavings
                 val essential = if (user.monthlyEssentialExpenses > 0) user.monthlyEssentialExpenses else (user.monthlyInHandSalary * 0.5)
 
-                val recurring = repository.recurringDao.getActiveRecurringExpensesFlow(user.id).firstOrNull() ?: emptyList()
+                val recurring = repository.getActiveRecurringExpensesFlow(user.id).firstOrNull() ?: emptyList()
                 val totalDebtEmi = recurring.filter { it.categoryName.equals("EMI", true) || it.name.contains("EMI", true) || it.name.contains("Loan", true) }.sumOf { it.amount }
 
                 val calculated = FinancialFreedomCalculator.calculate(
