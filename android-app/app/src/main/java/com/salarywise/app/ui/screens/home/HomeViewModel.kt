@@ -87,7 +87,7 @@ class HomeViewModel(private val repository: SalaryWiseRepository) : ViewModel() 
                 // 7. Smart Insights
                 val prevMonth = DateUtils.getPreviousMonthYear(currentMonth)
                 val (pStart, pEnd) = DateUtils.getStartAndEndOfMonth(prevMonth)
-                val prevExpenses = repository.expenseDao.getTotalExpenseInRange(user.id, pStart, pEnd)
+                val prevExpenses = repository.getTotalExpenseInRange(user.id, pStart, pEnd)
                 val prevSalary = repository.getSalaryForMonth(user.id, prevMonth)?.inHandSalary ?: monthlySalary
                 val prevSavings = (prevSalary - prevExpenses).coerceAtLeast(0.0)
 
