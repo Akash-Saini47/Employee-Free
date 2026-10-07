@@ -26,7 +26,7 @@ flowchart LR
 ### Key Principles
 1. **Factual & Honest**: Insights, health scores, and metrics are derived strictly from stored data without inventing figures or offering misleading financial advice.
 2. **No False Promises**: The app never guarantees financial freedom or investment returns. Instead, it provides objective stability indicators (e.g., months of emergency runway).
-3. **Local-First & Private**: Financial data is stored securely on the user's device using an encrypted local SQLite/Room database and optional 4-digit PIN lock.
+3. **Local-First & Private**: Financial data is stored securely on the user's device using an Room SQLite database in Android app-private storage and optional 4-digit PIN lock.
 
 ---
 
@@ -283,7 +283,7 @@ Built with Room SQLite using 9 relational entities:
 ### Section 20: Privacy & Security
 - Local-first architecture: financial data remains strictly on the user's device.
 - 4-digit PIN lock screen with numeric keypad.
-- Backup export and restore capability.
+- JSON backup export capability; import/restore is intentionally not implemented yet.
 - Explicit confirmation dialogs before deleting records or resetting accounts.
 
 ### Section 21: Product Principle
