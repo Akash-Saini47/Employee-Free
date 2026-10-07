@@ -79,12 +79,6 @@ class MainActivity : ComponentActivity() {
                     }
             }
 
-            // Scheduling reminders is optional. It is deliberately outside
-            // Application.onCreate so WorkManager cannot prevent app startup.
-            LaunchedEffect(Unit) {
-                app.scheduleBillRemindersSafely()
-            }
-
             val currentUser = (userState as? UserLoadState.Loaded)?.user
             val isDarkTheme = currentUser?.isDarkMode ?: isSystemInDarkTheme()
 
