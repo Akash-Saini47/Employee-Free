@@ -6,8 +6,8 @@ import java.util.Date
 import java.util.Locale
 
 object DateUtils {
-    private val displayFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
-    private val monthYearFormat = SimpleDateFormat("yyyy-MM", Locale.getDefault())
+    private val displayFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).apply { isLenient = false }
+    private val monthYearFormat = SimpleDateFormat("yyyy-MM", Locale.getDefault()).apply { isLenient = false }
     private val readableMonthFormat = SimpleDateFormat("MMMM yyyy", Locale.getDefault())
     private val shortMonthFormat = SimpleDateFormat("MMM", Locale.getDefault())
 
